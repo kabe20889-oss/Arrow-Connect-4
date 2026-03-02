@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Arrow Connect 4</title>
+    <style>
+        :root {
+            --bg-color: #f1f5f9;
+            --cell-size: min(12vw, 42px);
+            --p1-color: #ef4444;
+            --p2-color: #3b82f6;
+            --accent-color: #10b981;
+            --panel-bg: #ffffff;
+            --arrow-color: #ffffff;
+            --grid-bg: #cbd5e1;
+            --p1-highlight: rgba(255, 50, 50, 0.25);
+            --p2-highlight: rgba(50, 150, 255, 0.25);
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 10px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: row; /* デフォルトは横並び */
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+            background: var(--panel-bg);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        /* 縦画面（モバイルなど）のレイアウト切り替え */
+        @media (max-width: 600px), (orientation: portrait) {
+            .game-container {
+                flex-direction: column; /* 縦並びに変更 */
+                padding: 15px;
+                gap: 15px;
+            }
+            .side-panel {
+                width: 100% !important;
+                flex-direction: row !important;
+                flex-wrap: wrap;
+                justify-content: center;
+                align-items: center;
+            }
+            .status-card {
+                flex: 1;
+                min-width: 100px;
+            }
+            .history-controls {
+                flex: 1;
+                min-width: 150px;
+            }
+        }
+
+        .side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 150px;
+            flex-shrink: 0;
+        }
+
+        .status-card {
+            padding: 12px;
+            border-radius: 12px;
+            background: #f8fafc;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+
+        .current-player {
+            font-size: 1.1rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .player-indicator {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+        }
+
+        .direction-panel {
+            background: #f8fafc;
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .direction-panel.disabled {
+            opacity: 0.15;
+            pointer-events: none;
+        }
+
+        .direction-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+        }
+
+        .dir-btn {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #cbd5e1;
+            background: white;
+            border-radius: 6px;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: manipulation;
+        }
+
+        .dir-btn:hover {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
+        .grid-container {
+            padding: 6px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            max-width: 100%;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(7, var(--cell-size));
+            grid-template-rows: repeat(7, var(--cell-size));
+            gap: 3px;
+            background-color: var(--grid-bg);
+            padding: 3px;
+            border-radius: 6px;
+            position: relative;
+        }
+
+        .cell {
+            width: var(--cell-size);
+            height: var(--cell-size);
+            background-color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            border-radius: 3px;
+            touch-action: manipulation;
+        }
+
+        .cell.valid-p1 { background-color: #ffdce0 !important; }
+        .cell.valid-p2 { background-color: #e0f0ff !important; }
+
+        .cell.winner {
+            background-color: #fef08a !important;
+            animation: win-pulse 0.6s infinite alternate;
+            z-index: 5;
+        }
+
+        @keyframes win-pulse {
+            from { opacity: 1; }
+            to { opacity: 0.7; }
+        }
+
+        .piece {
+            width: 80%;
+            height: 80%;
+            border-radius: 50%;
+            z-index: 2;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .piece.red { background: radial-gradient(circle at 30% 30%, #ff6b6b, var(--p1-color)); }
+        .piece.blue { background: radial-gradient(circle at 30% 30%, #60a5fa, var(--p2-color)); }
+
+        .arrow-draw {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            pointer-events: none;
+            z-index: 3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .arrow-head {
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-bottom: 8px solid var(--arrow-color);
+            position: absolute;
+            top: 0;
+        }
+
+        .arrow-body {
+            width: 3px;
+            height: 12px;
+            background-color: var(--arrow-color);
+            position: absolute;
+            bottom: 4px;
+        }
+
+        .history-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        button.action-btn {
+            padding: 8px;
+            border: none;
+            border-radius: 8px;
+            background-color: #64748b;
+            color: white;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 600;
+            touch-action: manipulation;
+        }
+
+        button.action-btn:disabled {
+            background-color: #cbd5e1;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        button.reset-btn {
+            background-color: #ef4444;
+            grid-column: span 2;
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <div class="side-panel">
+        <div class="status-card">
+            <div class="current-player">
+                <div class="player-indicator" id="turn-color"></div>
+                <span id="turn-text">P1</span>
+            </div>
+        </div>
+
+        <div class="direction-panel disabled" id="dir-panel">
+            <div class="direction-grid">
+                <button class="dir-btn" onclick="handleDirSelect(-1, -1)">↖</button>
+                <button class="dir-btn" onclick="handleDirSelect(-1, 0)">↑</button>
+                <button class="dir-btn" onclick="handleDirSelect(-1, 1)">↗</button>
+                <button class="dir-btn" onclick="handleDirSelect(0, -1)">←</button>
+                <div style="width:40px;"></div>
+                <button class="dir-btn" onclick="handleDirSelect(0, 1)">→</button>
+                <button class="dir-btn" onclick="handleDirSelect(1, -1)">↙</button>
+                <button class="dir-btn" onclick="handleDirSelect(1, 0)">↓</button>
+                <button class="dir-btn" onclick="handleDirSelect(1, 1)">↘</button>
+            </div>
+        </div>
+
+        <div class="history-controls">
+            <button class="action-btn" id="undo-btn">戻る</button>
+            <button class="action-btn" id="redo-btn">進む</button>
+            <button class="action-btn reset-btn" id="reset-btn">リセット</button>
+        </div>
+    </div>
+
+    <div class="grid-container">
+        <div class="grid" id="board"></div>
+    </div>
+</div>
+
+<script>
+    const BOARD_SIZE = 7;
+    const WIN_COUNT = 4;
+    
+    let board = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null));
+    let currentPlayer = 1;
+    let selectingDirection = null; 
+    let lastMove = null; 
+    let arrowDir = null; 
+    let winnerData = null; 
+
+    let history = [];
+    let historyIndex = -1;
+
+    const boardEl = document.getElementById('board');
+    const turnText = document.getElementById('turn-text');
+    const turnColor = document.getElementById('turn-color');
+    const dirPanel = document.getElementById('dir-panel');
+    const undoBtn = document.getElementById('undo-btn');
+    const redoBtn = document.getElementById('redo-btn');
+    const resetBtn = document.getElementById('reset-btn');
+
+    const getRotation = (dr, dc) => {
+        if (dr === -1 && dc === 0) return 0;      
+        if (dr === -1 && dc === 1) return 45;     
+        if (dr === 0 && dc === 1) return 90;      
+        if (dr === 1 && dc === 1) return 135;     
+        if (dr === 1 && dc === 0) return 180;     
+        if (dr === 1 && dc === -1) return 225;    
+        if (dr === 0 && dc === -1) return 270;    
+        if (dr === -1 && dc === -1) return 315;   
+        return 0;
+    };
+
+    function initBoard() {
+        boardEl.innerHTML = '';
+        for (let r = 0; r < BOARD_SIZE; r++) {
+            for (let c = 0; c < BOARD_SIZE; c++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.dataset.r = r;
+                cell.dataset.c = c;
+                cell.onclick = () => handleCellClick(r, c);
+                boardEl.appendChild(cell);
+            }
+        }
+        saveToHistory();
+        render();
+    }
+
+    function handleCellClick(r, c) {
+        if (winnerData || selectingDirection || board[r][c] !== null) return;
+        
+        const validMoves = getValidMoves();
+        if (validMoves.length > 0 && !validMoves.some(m => m.r === r && m.c === c)) return;
+
+        board[r][c] = currentPlayer;
+        lastMove = { r, c };
+        
+        const winLine = checkWin(r, c, currentPlayer);
+        if (winLine) {
+            winnerData = { player: currentPlayer, line: winLine };
+            selectingDirection = null; 
+            arrowDir = null; 
+            saveToHistory(); 
+        } else {
+            selectingDirection = { r, c };
+            arrowDir = null; 
+        }
+        render();
+    }
+
+    function handleDirSelect(dr, dc) {
+        if (!selectingDirection) return;
+        
+        arrowDir = { dr, dc };
+        selectingDirection = null;
+        currentPlayer = currentPlayer === 1 ? 2 : 1;
+
+        saveToHistory(); 
+        render();
+    }
+
+    function getValidMoves() {
+        if (!lastMove || !arrowDir) return [];
+        let valid = [];
+        let currR = lastMove.r + arrowDir.dr;
+        let currC = lastMove.c + arrowDir.dc;
+        
+        while (currR >= 0 && currR < BOARD_SIZE && currC >= 0 && currC < BOARD_SIZE) {
+            if (board[currR][currC] === null) {
+                valid.push({ r: currR, c: currC });
+            }
+            currR += arrowDir.dr;
+            currC += arrowDir.dc;
+        }
+
+        if (valid.length === 0) {
+            for (let r = 0; r < BOARD_SIZE; r++) {
+                for (let c = 0; c < BOARD_SIZE; c++) {
+                    if (board[r][c] === null) {
+                        valid.push({ r, c });
+                    }
+                }
+            }
+        }
+        
+        return valid;
+    }
+
+    function checkWin(r, c, player) {
+        const checks = [[0, 1], [1, 0], [1, 1], [1, -1]];
+        for (const [dr, dc] of checks) {
+            let line = [{ r, c }];
+            let nr = r + dr, nc = c + dc;
+            while (nr >= 0 && nr < BOARD_SIZE && nc >= 0 && nc < BOARD_SIZE && board[nr][nc] === player) {
+                line.push({ r: nr, c: nc }); nr += dr; nc += dc;
+            }
+            nr = r - dr; nc = c - dc;
+            while (nr >= 0 && nr < BOARD_SIZE && nc >= 0 && nc < BOARD_SIZE && board[nr][nc] === player) {
+                line.push({ r: nr, c: nc }); nr -= dr; nc -= dc;
+            }
+            if (line.length >= WIN_COUNT) return line;
+        }
+        return null;
+    }
+
+    function saveToHistory() {
+        if (historyIndex < history.length - 1) {
+            history = history.slice(0, historyIndex + 1);
+        }
+        
+        history.push({
+            board: board.map(row => [...row]),
+            currentPlayer: currentPlayer,
+            lastMove: lastMove ? { ...lastMove } : null,
+            arrowDir: arrowDir ? { ...arrowDir } : null,
+            winnerData: winnerData ? { player: winnerData.player, line: [...winnerData.line] } : null,
+            selectingDirection: selectingDirection ? { ...selectingDirection } : null
+        });
+        historyIndex++;
+    }
+
+    function undo() {
+        if (historyIndex > 0) {
+            if (selectingDirection) {
+                const prevState = history[historyIndex];
+                board = prevState.board.map(row => [...row]);
+                selectingDirection = null;
+                lastMove = prevState.lastMove;
+                arrowDir = prevState.arrowDir;
+            } else {
+                historyIndex--;
+                const state = history[historyIndex];
+                board = state.board.map(row => [...row]);
+                currentPlayer = state.currentPlayer;
+                lastMove = state.lastMove;
+                arrowDir = state.arrowDir;
+                winnerData = state.winnerData;
+                selectingDirection = state.selectingDirection;
+            }
+            render();
+        }
+    }
+
+    function redo() {
+        if (historyIndex < history.length - 1 && !selectingDirection) {
+            historyIndex++;
+            const state = history[historyIndex];
+            board = state.board.map(row => [...row]);
+            currentPlayer = state.currentPlayer;
+            lastMove = state.lastMove;
+            arrowDir = state.arrowDir;
+            winnerData = state.winnerData;
+            selectingDirection = state.selectingDirection;
+            render();
+        }
+    }
+
+    function render() {
+        const validMoves = (winnerData || selectingDirection) ? [] : getValidMoves();
+        const cells = document.querySelectorAll('.cell');
+        
+        cells.forEach(cell => {
+            const r = parseInt(cell.dataset.r);
+            const c = parseInt(cell.dataset.c);
+            const val = board[r][c];
+            
+            cell.innerHTML = '';
+            cell.className = 'cell';
+            cell.style.backgroundColor = 'white';
+            
+            if (val) {
+                const piece = document.createElement('div');
+                piece.className = `piece ${val === 1 ? 'red' : 'blue'}`;
+                cell.appendChild(piece);
+                
+                if (lastMove && lastMove.r === r && lastMove.c === c && arrowDir) {
+                    const arrowWrap = document.createElement('div');
+                    arrowWrap.className = 'arrow-draw';
+                    arrowWrap.style.transform = `rotate(${getRotation(arrowDir.dr, arrowDir.dc)}deg)`;
+                    const head = document.createElement('div');
+                    head.className = 'arrow-head';
+                    const bodyPart = document.createElement('div');
+                    bodyPart.className = 'arrow-body';
+                    arrowWrap.appendChild(head);
+                    arrowWrap.appendChild(bodyPart);
+                    cell.appendChild(arrowWrap);
+                }
+            }
+            
+            if (validMoves.some(m => m.r === r && m.c === c)) {
+                cell.classList.add(currentPlayer === 1 ? 'valid-p1' : 'valid-p2');
+            }
+
+            if (winnerData && winnerData.line.some(l => l.r === r && l.c === c)) {
+                cell.classList.add('winner');
+            }
+        });
+
+        turnColor.style.backgroundColor = currentPlayer === 1 ? 'var(--p1-color)' : 'var(--p2-color)';
+        if (winnerData) {
+            turnText.textContent = `P${winnerData.player} WIN`;
+            dirPanel.classList.add('disabled');
+        } else {
+            turnText.textContent = `P${currentPlayer}`;
+            dirPanel.classList.toggle('disabled', !selectingDirection);
+        }
+
+        undoBtn.disabled = historyIndex <= 0 && !selectingDirection;
+        redoBtn.disabled = historyIndex >= history.length - 1 || selectingDirection !== null;
+    }
+
+    resetBtn.addEventListener('click', () => {
+        board = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null));
+        currentPlayer = 1; selectingDirection = null; lastMove = null; arrowDir = null; winnerData = null;
+        history = []; historyIndex = -1;
+        initBoard();
+    });
+
+    undoBtn.addEventListener('click', undo);
+    redoBtn.addEventListener('click', redo);
+
+    window.onload = initBoard;
+</script>
+
+</body>
+</html>
+
