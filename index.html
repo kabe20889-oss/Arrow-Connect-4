@@ -13,14 +13,12 @@
             --panel-bg: #ffffff;
             --arrow-color: #ffffff;
             --grid-bg: #cbd5e1;
-            /* デフォルトのセルサイズ（縦向き用） */
-            --cell-size: min(12vw, 42px);
+            --cell-size: min(10.5vw, 38px);
         }
 
-        /* 横向き時の最適化（盤面を最大化） */
         @media (orientation: landscape) {
             :root {
-                --cell-size: min(10vw, 12vh, 65px);
+                --cell-size: min(9vw, 11vh, 58px);
             }
         }
 
@@ -47,75 +45,75 @@
             flex-direction: row;
             align-items: center;
             justify-content: center;
-            gap: 20px;
-            padding: 15px;
+            gap: 15px;
+            padding: 10px;
             width: 100%;
             height: 100%;
+            transform: scale(0.95);
         }
 
-        /* 縦向きレイアウトの復元 */
         @media (max-width: 600px), (orientation: portrait) {
             body {
-                align-items: flex-start; /* 少し上に配置 */
-                padding-top: 20px;
+                align-items: flex-start;
+                padding-top: 15px;
             }
             .game-container {
                 flex-direction: column;
                 align-items: center;
                 justify-content: flex-start;
-                gap: 15px;
+                gap: 12px;
+                transform: scale(0.92);
             }
             .side-panel {
                 width: 100% !important;
                 flex-direction: row !important;
                 justify-content: center !important;
                 align-items: center;
-                gap: 12px !important;
+                gap: 10px !important;
             }
-            .status-card { flex: 0 0 auto; min-width: 80px; }
-            .direction-panel { flex: 0 0 auto; }
-            .history-controls { flex: 0 0 auto; min-width: 100px; }
+            .status-card { flex: 0 0 auto; min-width: 70px; padding: 8px !important; }
+            .direction-panel { flex: 0 0 auto; padding: 6px !important; }
+            .history-controls { flex: 0 0 auto; min-width: 90px; gap: 4px !important; }
+            .dir-btn { width: 34px !important; height: 34px !important; font-size: 16px !important; }
         }
 
-        /* サイドパネル */
         .side-panel {
             display: flex;
             flex-direction: column;
             justify-content: center;
-            gap: 15px;
-            width: 160px;
+            gap: 12px;
+            width: 150px;
             flex-shrink: 0;
         }
 
         .status-card {
             background: var(--panel-bg);
             padding: 10px;
-            border-radius: 12px;
+            border-radius: 10px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             text-align: center;
             border: 1px solid #e2e8f0;
         }
 
         .current-player {
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-weight: 800;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
         }
 
         .player-indicator {
-            width: 14px;
-            height: 14px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
         }
 
-        /* 矢印選択パネル */
         .direction-panel {
             background: var(--panel-bg);
             padding: 8px;
-            border-radius: 12px;
+            border-radius: 10px;
             border: 1px solid #e2e8f0;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
@@ -133,12 +131,12 @@
         }
 
         .dir-btn {
-            width: 38px;
-            height: 38px;
+            width: 36px;
+            height: 36px;
             border: 1px solid #cbd5e1;
             background: white;
             border-radius: 6px;
-            font-size: 18px;
+            font-size: 16px;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -146,22 +144,21 @@
             padding: 0;
         }
 
-        /* 盤面エリア */
         .grid-container {
             display: flex;
             align-items: center;
             justify-content: center;
             background: var(--grid-bg);
-            padding: 6px;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            padding: 5px;
+            border-radius: 10px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
         }
 
         .grid {
             display: grid;
             grid-template-columns: repeat(7, var(--cell-size));
             grid-template-rows: repeat(7, var(--cell-size));
-            gap: 3px;
+            gap: 2px;
         }
 
         .cell {
@@ -172,7 +169,7 @@
             align-items: center;
             justify-content: center;
             position: relative;
-            border-radius: 4px;
+            border-radius: 3px;
             cursor: pointer;
         }
 
@@ -183,11 +180,11 @@
         @keyframes win-pulse { from { transform: scale(1); } to { transform: scale(0.95); opacity: 0.8; } }
 
         .piece {
-            width: 85%;
-            height: 85%;
+            width: 82%;
+            height: 82%;
             border-radius: 50%;
             z-index: 2;
-            box-shadow: inset -2px -2px 4px rgba(0,0,0,0.1), 1px 1px 2px rgba(0,0,0,0.1);
+            box-shadow: inset -1px -1px 3px rgba(0,0,0,0.1), 1px 1px 2px rgba(0,0,0,0.05);
         }
         .piece.red { background: radial-gradient(circle at 30% 30%, #ff8787, var(--p1-color)); }
         .piece.blue { background: radial-gradient(circle at 30% 30%, #74c0fc, var(--p2-color)); }
@@ -208,29 +205,31 @@
             border-left: 5px solid transparent;
             border-right: 5px solid transparent;
             border-bottom: 7px solid var(--arrow-color);
-            position: absolute; top: 0;
+            position: absolute; 
+            top: 2px;
         }
 
         .arrow-body {
-            width: 2px; height: 50%;
+            width: 2.5px; 
+            height: 12px;
             background-color: var(--arrow-color);
-            position: absolute; bottom: 15%;
+            position: absolute; 
+            top: 8px;
         }
 
-        /* コントロール */
         .history-controls {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 6px;
+            gap: 4px;
         }
 
         .action-btn {
-            padding: 8px 6px;
+            padding: 6px 4px;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             background-color: #475569;
             color: white;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 700;
             cursor: pointer;
         }
@@ -323,6 +322,9 @@
 
         board[r][c] = currentPlayer;
         lastMove = { r, c };
+        // 駒を置いた瞬間はまだ矢印の向きが未確定なので null にリセット
+        arrowDir = null; 
+        
         const winLine = checkWin(r, c, currentPlayer);
         if (winLine) {
             winnerData = { player: currentPlayer, line: winLine };
@@ -389,6 +391,9 @@
                 const prevState = history[historyIndex];
                 board = prevState.board.map(row => [...row]);
                 selectingDirection = null;
+                // 駒を置く前に戻すので lastMove などの状態も履歴から復元
+                lastMove = prevState.lastMove; 
+                arrowDir = prevState.arrowDir;
             } else {
                 historyIndex--;
                 const state = history[historyIndex];
@@ -423,7 +428,12 @@
                 const piece = document.createElement('div');
                 piece.className = `piece ${val === 1 ? 'red' : 'blue'}`;
                 cell.appendChild(piece);
-                if (lastMove && lastMove.r === r && lastMove.c === c && arrowDir) {
+                
+                // 修正：矢印を表示する条件を厳密化
+                // 1. lastMove であること
+                // 2. arrowDir が確定していること
+                // 3. 現在向きを選択中（selectingDirection）でないこと（新しい駒を置いた直後の誤表示を防ぐ）
+                if (lastMove && lastMove.r === r && lastMove.c === c && arrowDir && !selectingDirection) {
                     const arrowWrap = document.createElement('div');
                     arrowWrap.className = 'arrow-draw';
                     arrowWrap.style.transform = `rotate(${getRotation(arrowDir.dr, arrowDir.dc)}deg)`;
