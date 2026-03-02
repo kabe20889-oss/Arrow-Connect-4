@@ -23,18 +23,19 @@
             background-color: var(--bg-color);
             margin: 0;
             display: flex;
-            align-items: center;
+            align-items: flex-start; /* 上寄せに変更 */
             justify-content: center;
             min-height: 100vh;
-            padding: 10px;
+            padding: 20px 10px 10px 10px; /* 上部の余白を調整 */
             box-sizing: border-box;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
         }
 
         .game-container {
             display: flex;
-            flex-direction: row; /* デフォルトは横並び */
-            align-items: center;
+            flex-direction: row;
+            align-items: flex-start; /* コンテナ内も上寄せ */
             justify-content: center;
             gap: 20px;
             padding: 20px;
@@ -42,15 +43,18 @@
             border-radius: 16px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.06);
             max-width: 100%;
-            max-height: 100%;
         }
 
         /* 縦画面（モバイルなど）のレイアウト切り替え */
         @media (max-width: 600px), (orientation: portrait) {
+            body {
+                padding-top: 10px; /* 縦向き時は少し詰める */
+            }
             .game-container {
-                flex-direction: column; /* 縦並びに変更 */
+                flex-direction: column;
                 padding: 15px;
                 gap: 15px;
+                align-items: center;
             }
             .side-panel {
                 width: 100% !important;
@@ -61,7 +65,7 @@
             }
             .status-card {
                 flex: 1;
-                min-width: 100px;
+                min-width: 80px;
             }
             .history-controls {
                 flex: 1;
