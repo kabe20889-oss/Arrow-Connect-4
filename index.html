@@ -7,161 +7,147 @@
     <style>
         :root {
             --bg-color: #f1f5f9;
-            --cell-size: min(12vw, 42px);
             --p1-color: #ef4444;
             --p2-color: #3b82f6;
             --accent-color: #10b981;
             --panel-bg: #ffffff;
             --arrow-color: #ffffff;
             --grid-bg: #cbd5e1;
-            --p1-highlight: rgba(255, 50, 50, 0.25);
-            --p2-highlight: rgba(50, 150, 255, 0.25);
+            /* 画面の高さや幅に合わせてセルのサイズを動的に計算 */
+            --cell-size: min(11vw, 5.5vh, 45px);
+        }
+
+        * {
+            box-sizing: border-box;
+            touch-action: manipulation;
         }
 
         body {
-            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg-color);
             margin: 0;
+            padding: 0;
             display: flex;
-            align-items: flex-start; /* 上寄せに変更 */
-            justify-content: center;
-            min-height: 100vh;
-            padding: 20px 10px 10px 10px; /* 上部の余白を調整 */
-            box-sizing: border-box;
-            overflow-x: hidden;
-            overflow-y: auto;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 100dvh;
+            width: 100vw;
+            overflow: hidden;
         }
 
         .game-container {
             display: flex;
             flex-direction: row;
-            align-items: flex-start; /* コンテナ内も上寄せ */
+            align-items: flex-start;
             justify-content: center;
-            gap: 20px;
-            padding: 20px;
-            background: var(--panel-bg);
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            gap: 15px;
+            padding: 10px;
             max-width: 100%;
+            max-height: 100%;
         }
 
-        /* 縦画面（モバイルなど）のレイアウト切り替え */
-        @media (max-width: 600px), (orientation: portrait) {
-            body {
-                padding-top: 10px; /* 縦向き時は少し詰める */
-            }
-            .game-container {
-                flex-direction: column;
-                padding: 15px;
-                gap: 15px;
-                align-items: center;
-            }
-            .side-panel {
-                width: 100% !important;
-                flex-direction: row !important;
-                flex-wrap: wrap;
-                justify-content: center;
-                align-items: center;
-            }
-            .status-card {
-                flex: 1;
-                min-width: 80px;
-            }
-            .history-controls {
-                flex: 1;
-                min-width: 150px;
-            }
-        }
-
+        /* サイドパネル */
         .side-panel {
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            width: 150px;
+            gap: 10px;
+            width: 140px;
             flex-shrink: 0;
         }
 
+        /* 縦向き・モバイルレイアウト */
+        @media (max-width: 600px), (orientation: portrait) {
+            .game-container {
+                flex-direction: column;
+                align-items: center;
+                gap: 8px;
+            }
+            .side-panel {
+                width: 95vw;
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+                gap: 5px;
+            }
+            .status-card { flex: 1; margin: 0; }
+            .direction-panel { flex: 2; margin: 0; }
+            .history-controls { flex: 1.2; margin: 0; }
+        }
+
         .status-card {
-            padding: 12px;
-            border-radius: 12px;
-            background: #f8fafc;
+            background: var(--panel-bg);
+            padding: 8px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             text-align: center;
             border: 1px solid #e2e8f0;
         }
 
         .current-player {
-            font-size: 1.1rem;
+            font-size: 0.85rem;
             font-weight: 800;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-        }
-
-        .player-indicator {
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-        }
-
-        .direction-panel {
-            background: #f8fafc;
-            padding: 10px;
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
             gap: 6px;
         }
 
+        .player-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        /* 矢印選択パネル */
+        .direction-panel {
+            background: var(--panel-bg);
+            padding: 5px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
         .direction-panel.disabled {
-            opacity: 0.15;
+            opacity: 0.1;
             pointer-events: none;
         }
 
         .direction-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 4px;
+            gap: 3px;
         }
 
         .dir-btn {
-            width: 40px;
-            height: 40px;
+            width: min(35px, 8vw);
+            height: min(35px, 8vw);
             border: 1px solid #cbd5e1;
             background: white;
-            border-radius: 6px;
-            font-size: 18px;
+            border-radius: 4px;
+            font-size: 14px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            touch-action: manipulation;
+            padding: 0;
         }
 
-        .dir-btn:hover {
-            background: var(--accent-color);
-            color: white;
-            border-color: var(--accent-color);
-        }
+        .dir-btn:active { background: #f1f5f9; }
 
+        /* 盤面 */
         .grid-container {
-            padding: 6px;
-            background: #e2e8f0;
+            background: var(--grid-bg);
+            padding: 4px;
             border-radius: 10px;
-            max-width: 100%;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
         .grid {
             display: grid;
             grid-template-columns: repeat(7, var(--cell-size));
             grid-template-rows: repeat(7, var(--cell-size));
-            gap: 3px;
-            background-color: var(--grid-bg);
-            padding: 3px;
-            border-radius: 6px;
-            position: relative;
+            gap: 2px;
         }
 
         .cell {
@@ -171,44 +157,30 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
             position: relative;
-            border-radius: 3px;
-            touch-action: manipulation;
+            border-radius: 2px;
+            cursor: pointer;
         }
 
-        .cell.valid-p1 { background-color: #ffdce0 !important; }
-        .cell.valid-p2 { background-color: #e0f0ff !important; }
+        .cell.valid-p1 { background-color: #ffdce0; }
+        .cell.valid-p2 { background-color: #e0f0ff; }
+        .cell.winner { background-color: #fef08a !important; animation: win-pulse 0.6s infinite alternate; }
 
-        .cell.winner {
-            background-color: #fef08a !important;
-            animation: win-pulse 0.6s infinite alternate;
-            z-index: 5;
-        }
-
-        @keyframes win-pulse {
-            from { opacity: 1; }
-            to { opacity: 0.7; }
-        }
+        @keyframes win-pulse { from { opacity: 1; } to { opacity: 0.6; } }
 
         .piece {
             width: 80%;
             height: 80%;
             border-radius: 50%;
             z-index: 2;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
-
         .piece.red { background: radial-gradient(circle at 30% 30%, #ff6b6b, var(--p1-color)); }
         .piece.blue { background: radial-gradient(circle at 30% 30%, #60a5fa, var(--p2-color)); }
 
         .arrow-draw {
             position: absolute;
-            width: 24px;
-            height: 24px;
+            width: 60%;
+            height: 60%;
             pointer-events: none;
             z-index: 3;
             display: flex;
@@ -217,56 +189,45 @@
         }
 
         .arrow-head {
-            width: 0;
-            height: 0;
-            border-left: 6px solid transparent;
-            border-right: 6px solid transparent;
-            border-bottom: 8px solid var(--arrow-color);
-            position: absolute;
-            top: 0;
+            width: 0; height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-bottom: 7px solid var(--arrow-color);
+            position: absolute; top: 0;
         }
 
         .arrow-body {
-            width: 3px;
-            height: 12px;
+            width: 2px; height: 50%;
             background-color: var(--arrow-color);
-            position: absolute;
-            bottom: 4px;
+            position: absolute; bottom: 15%;
         }
 
+        /* コントロール */
         .history-controls {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 6px;
+            gap: 4px;
         }
 
-        button.action-btn {
-            padding: 8px;
+        .action-btn {
+            padding: 6px 2px;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             background-color: #64748b;
             color: white;
-            cursor: pointer;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 600;
-            touch-action: manipulation;
+            cursor: pointer;
         }
 
-        button.action-btn:disabled {
-            background-color: #cbd5e1;
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        button.reset-btn {
-            background-color: #ef4444;
-            grid-column: span 2;
-        }
+        .action-btn:disabled { opacity: 0.3; }
+        .reset-btn { background-color: #ef4444; grid-column: span 2; }
     </style>
 </head>
 <body>
 
 <div class="game-container">
+    <!-- サイドパネル (上または横) -->
     <div class="side-panel">
         <div class="status-card">
             <div class="current-player">
@@ -281,7 +242,7 @@
                 <button class="dir-btn" onclick="handleDirSelect(-1, 0)">↑</button>
                 <button class="dir-btn" onclick="handleDirSelect(-1, 1)">↗</button>
                 <button class="dir-btn" onclick="handleDirSelect(0, -1)">←</button>
-                <div style="width:40px;"></div>
+                <div style="width:10px;"></div>
                 <button class="dir-btn" onclick="handleDirSelect(0, 1)">→</button>
                 <button class="dir-btn" onclick="handleDirSelect(1, -1)">↙</button>
                 <button class="dir-btn" onclick="handleDirSelect(1, 0)">↓</button>
@@ -296,6 +257,7 @@
         </div>
     </div>
 
+    <!-- 盤面エリア -->
     <div class="grid-container">
         <div class="grid" id="board"></div>
     </div>
@@ -304,34 +266,24 @@
 <script>
     const BOARD_SIZE = 7;
     const WIN_COUNT = 4;
-    
     let board = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null));
-    let currentPlayer = 1;
-    let selectingDirection = null; 
-    let lastMove = null; 
-    let arrowDir = null; 
-    let winnerData = null; 
+    let currentPlayer = 1, selectingDirection = null, lastMove = null, arrowDir = null, winnerData = null;
+    let history = [], historyIndex = -1;
 
-    let history = [];
-    let historyIndex = -1;
-
-    const boardEl = document.getElementById('board');
-    const turnText = document.getElementById('turn-text');
-    const turnColor = document.getElementById('turn-color');
-    const dirPanel = document.getElementById('dir-panel');
-    const undoBtn = document.getElementById('undo-btn');
-    const redoBtn = document.getElementById('redo-btn');
-    const resetBtn = document.getElementById('reset-btn');
+    const boardEl = document.getElementById('board'), turnText = document.getElementById('turn-text'),
+          turnColor = document.getElementById('turn-color'), dirPanel = document.getElementById('dir-panel'),
+          undoBtn = document.getElementById('undo-btn'), redoBtn = document.getElementById('redo-btn'),
+          resetBtn = document.getElementById('reset-btn');
 
     const getRotation = (dr, dc) => {
-        if (dr === -1 && dc === 0) return 0;      
-        if (dr === -1 && dc === 1) return 45;     
-        if (dr === 0 && dc === 1) return 90;      
-        if (dr === 1 && dc === 1) return 135;     
-        if (dr === 1 && dc === 0) return 180;     
-        if (dr === 1 && dc === -1) return 225;    
-        if (dr === 0 && dc === -1) return 270;    
-        if (dr === -1 && dc === -1) return 315;   
+        if (dr === -1 && dc === 0) return 0;
+        if (dr === -1 && dc === 1) return 45;
+        if (dr === 0 && dc === 1) return 90;
+        if (dr === 1 && dc === 1) return 135;
+        if (dr === 1 && dc === 0) return 180;
+        if (dr === 1 && dc === -1) return 225;
+        if (dr === 0 && dc === -1) return 270;
+        if (dr === -1 && dc === -1) return 315;
         return 0;
     };
 
@@ -341,8 +293,7 @@
             for (let c = 0; c < BOARD_SIZE; c++) {
                 const cell = document.createElement('div');
                 cell.className = 'cell';
-                cell.dataset.r = r;
-                cell.dataset.c = c;
+                cell.dataset.r = r; cell.dataset.c = c;
                 cell.onclick = () => handleCellClick(r, c);
                 boardEl.appendChild(cell);
             }
@@ -353,69 +304,49 @@
 
     function handleCellClick(r, c) {
         if (winnerData || selectingDirection || board[r][c] !== null) return;
-        
         const validMoves = getValidMoves();
         if (validMoves.length > 0 && !validMoves.some(m => m.r === r && m.c === c)) return;
 
         board[r][c] = currentPlayer;
         lastMove = { r, c };
-        
         const winLine = checkWin(r, c, currentPlayer);
         if (winLine) {
             winnerData = { player: currentPlayer, line: winLine };
-            selectingDirection = null; 
-            arrowDir = null; 
-            saveToHistory(); 
+            selectingDirection = null;
+            saveToHistory();
         } else {
             selectingDirection = { r, c };
-            arrowDir = null; 
         }
         render();
     }
 
     function handleDirSelect(dr, dc) {
         if (!selectingDirection) return;
-        
         arrowDir = { dr, dc };
         selectingDirection = null;
         currentPlayer = currentPlayer === 1 ? 2 : 1;
-
-        saveToHistory(); 
+        saveToHistory();
         render();
     }
 
     function getValidMoves() {
         if (!lastMove || !arrowDir) return [];
-        let valid = [];
-        let currR = lastMove.r + arrowDir.dr;
-        let currC = lastMove.c + arrowDir.dc;
-        
+        let valid = [], currR = lastMove.r + arrowDir.dr, currC = lastMove.c + arrowDir.dc;
         while (currR >= 0 && currR < BOARD_SIZE && currC >= 0 && currC < BOARD_SIZE) {
-            if (board[currR][currC] === null) {
-                valid.push({ r: currR, c: currC });
-            }
-            currR += arrowDir.dr;
-            currC += arrowDir.dc;
+            if (board[currR][currC] === null) valid.push({ r: currR, c: currC });
+            currR += arrowDir.dr; currC += arrowDir.dc;
         }
-
         if (valid.length === 0) {
-            for (let r = 0; r < BOARD_SIZE; r++) {
-                for (let c = 0; c < BOARD_SIZE; c++) {
-                    if (board[r][c] === null) {
-                        valid.push({ r, c });
-                    }
-                }
-            }
+            for (let r = 0; r < BOARD_SIZE; r++)
+                for (let c = 0; c < BOARD_SIZE; c++) if (board[r][c] === null) valid.push({ r, c });
         }
-        
         return valid;
     }
 
     function checkWin(r, c, player) {
         const checks = [[0, 1], [1, 0], [1, 1], [1, -1]];
         for (const [dr, dc] of checks) {
-            let line = [{ r, c }];
-            let nr = r + dr, nc = c + dc;
+            let line = [{ r, c }], nr = r + dr, nc = c + dc;
             while (nr >= 0 && nr < BOARD_SIZE && nc >= 0 && nc < BOARD_SIZE && board[nr][nc] === player) {
                 line.push({ r: nr, c: nc }); nr += dr; nc += dc;
             }
@@ -429,38 +360,28 @@
     }
 
     function saveToHistory() {
-        if (historyIndex < history.length - 1) {
-            history = history.slice(0, historyIndex + 1);
-        }
-        
+        if (historyIndex < history.length - 1) history = history.slice(0, historyIndex + 1);
         history.push({
-            board: board.map(row => [...row]),
-            currentPlayer: currentPlayer,
-            lastMove: lastMove ? { ...lastMove } : null,
-            arrowDir: arrowDir ? { ...arrowDir } : null,
-            winnerData: winnerData ? { player: winnerData.player, line: [...winnerData.line] } : null,
-            selectingDirection: selectingDirection ? { ...selectingDirection } : null
+            board: board.map(row => [...row]), currentPlayer, lastMove: lastMove ? {...lastMove} : null,
+            arrowDir: arrowDir ? {...arrowDir} : null, winnerData: winnerData ? {...winnerData} : null,
+            selectingDirection: selectingDirection ? {...selectingDirection} : null
         });
         historyIndex++;
     }
 
     function undo() {
-        if (historyIndex > 0) {
+        if (historyIndex > 0 || selectingDirection) {
             if (selectingDirection) {
                 const prevState = history[historyIndex];
                 board = prevState.board.map(row => [...row]);
                 selectingDirection = null;
-                lastMove = prevState.lastMove;
-                arrowDir = prevState.arrowDir;
             } else {
                 historyIndex--;
                 const state = history[historyIndex];
                 board = state.board.map(row => [...row]);
                 currentPlayer = state.currentPlayer;
-                lastMove = state.lastMove;
-                arrowDir = state.arrowDir;
-                winnerData = state.winnerData;
-                selectingDirection = state.selectingDirection;
+                lastMove = state.lastMove; arrowDir = state.arrowDir;
+                winnerData = state.winnerData; selectingDirection = state.selectingDirection;
             }
             render();
         }
@@ -472,10 +393,8 @@
             const state = history[historyIndex];
             board = state.board.map(row => [...row]);
             currentPlayer = state.currentPlayer;
-            lastMove = state.lastMove;
-            arrowDir = state.arrowDir;
-            winnerData = state.winnerData;
-            selectingDirection = state.selectingDirection;
+            lastMove = state.lastMove; arrowDir = state.arrowDir;
+            winnerData = state.winnerData; selectingDirection = state.selectingDirection;
             render();
         }
     }
@@ -483,53 +402,27 @@
     function render() {
         const validMoves = (winnerData || selectingDirection) ? [] : getValidMoves();
         const cells = document.querySelectorAll('.cell');
-        
         cells.forEach(cell => {
-            const r = parseInt(cell.dataset.r);
-            const c = parseInt(cell.dataset.c);
-            const val = board[r][c];
-            
-            cell.innerHTML = '';
-            cell.className = 'cell';
-            cell.style.backgroundColor = 'white';
-            
+            const r = parseInt(cell.dataset.r), c = parseInt(cell.dataset.c), val = board[r][c];
+            cell.innerHTML = ''; cell.className = 'cell';
             if (val) {
                 const piece = document.createElement('div');
                 piece.className = `piece ${val === 1 ? 'red' : 'blue'}`;
                 cell.appendChild(piece);
-                
                 if (lastMove && lastMove.r === r && lastMove.c === c && arrowDir) {
                     const arrowWrap = document.createElement('div');
                     arrowWrap.className = 'arrow-draw';
                     arrowWrap.style.transform = `rotate(${getRotation(arrowDir.dr, arrowDir.dc)}deg)`;
-                    const head = document.createElement('div');
-                    head.className = 'arrow-head';
-                    const bodyPart = document.createElement('div');
-                    bodyPart.className = 'arrow-body';
-                    arrowWrap.appendChild(head);
-                    arrowWrap.appendChild(bodyPart);
+                    arrowWrap.innerHTML = '<div class="arrow-head"></div><div class="arrow-body"></div>';
                     cell.appendChild(arrowWrap);
                 }
             }
-            
-            if (validMoves.some(m => m.r === r && m.c === c)) {
-                cell.classList.add(currentPlayer === 1 ? 'valid-p1' : 'valid-p2');
-            }
-
-            if (winnerData && winnerData.line.some(l => l.r === r && l.c === c)) {
-                cell.classList.add('winner');
-            }
+            if (validMoves.some(m => m.r === r && m.c === c)) cell.classList.add(currentPlayer === 1 ? 'valid-p1' : 'valid-p2');
+            if (winnerData && winnerData.line.some(l => l.r === r && l.c === c)) cell.classList.add('winner');
         });
-
         turnColor.style.backgroundColor = currentPlayer === 1 ? 'var(--p1-color)' : 'var(--p2-color)';
-        if (winnerData) {
-            turnText.textContent = `P${winnerData.player} WIN`;
-            dirPanel.classList.add('disabled');
-        } else {
-            turnText.textContent = `P${currentPlayer}`;
-            dirPanel.classList.toggle('disabled', !selectingDirection);
-        }
-
+        turnText.textContent = winnerData ? `P${winnerData.player} WIN` : `P${currentPlayer}`;
+        dirPanel.classList.toggle('disabled', !selectingDirection);
         undoBtn.disabled = historyIndex <= 0 && !selectingDirection;
         redoBtn.disabled = historyIndex >= history.length - 1 || selectingDirection !== null;
     }
@@ -537,16 +430,12 @@
     resetBtn.addEventListener('click', () => {
         board = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null));
         currentPlayer = 1; selectingDirection = null; lastMove = null; arrowDir = null; winnerData = null;
-        history = []; historyIndex = -1;
-        initBoard();
+        history = []; historyIndex = -1; initBoard();
     });
-
     undoBtn.addEventListener('click', undo);
     redoBtn.addEventListener('click', redo);
-
     window.onload = initBoard;
 </script>
-
 </body>
 </html>
 
