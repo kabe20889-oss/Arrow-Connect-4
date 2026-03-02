@@ -13,12 +13,17 @@
             --panel-bg: #ffffff;
             --arrow-color: #ffffff;
             --grid-bg: #cbd5e1;
-            --cell-size: min(10.5vw, 38px);
+            /* 縦向き（デフォルト）は操作しやすい大きめサイズ */
+            --cell-size: min(12vw, 45px);
         }
 
+        /* 横向き時は指定通り約20%縮小 */
         @media (orientation: landscape) {
             :root {
-                --cell-size: min(9vw, 11vh, 58px);
+                --cell-size: min(6.5vw, 8.5vh, 42px);
+            }
+            .game-container {
+                transform: scale(0.8); /* 横向きのみ縮小 */
             }
         }
 
@@ -49,32 +54,33 @@
             padding: 10px;
             width: 100%;
             height: 100%;
-            transform: scale(0.95);
+            transition: transform 0.3s ease;
         }
 
+        /* 縦向きレイアウト：縮小を解除し、元のフルサイズに */
         @media (max-width: 600px), (orientation: portrait) {
             body {
                 align-items: flex-start;
-                padding-top: 15px;
+                padding-top: 20px;
             }
             .game-container {
                 flex-direction: column;
                 align-items: center;
                 justify-content: flex-start;
-                gap: 12px;
-                transform: scale(0.92);
+                gap: 15px;
+                transform: scale(1.0); /* 縦向きは縮小しない */
             }
             .side-panel {
                 width: 100% !important;
                 flex-direction: row !important;
                 justify-content: center !important;
                 align-items: center;
-                gap: 10px !important;
+                gap: 12px !important;
             }
-            .status-card { flex: 0 0 auto; min-width: 70px; padding: 8px !important; }
-            .direction-panel { flex: 0 0 auto; padding: 6px !important; }
-            .history-controls { flex: 0 0 auto; min-width: 90px; gap: 4px !important; }
-            .dir-btn { width: 34px !important; height: 34px !important; font-size: 16px !important; }
+            .status-card { flex: 0 0 auto; min-width: 80px; padding: 10px !important; }
+            .direction-panel { flex: 0 0 auto; padding: 8px !important; }
+            .history-controls { flex: 0 0 auto; min-width: 100px; gap: 5px !important; }
+            .dir-btn { width: 38px !important; height: 38px !important; font-size: 18px !important; }
         }
 
         .side-panel {
@@ -229,7 +235,7 @@
             border-radius: 6px;
             background-color: #475569;
             color: white;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             font-weight: 700;
             cursor: pointer;
         }
@@ -322,7 +328,6 @@
 
         board[r][c] = currentPlayer;
         lastMove = { r, c };
-        // 駒を置いた瞬間はまだ矢印の向きが未確定なので null にリセット
         arrowDir = null; 
         
         const winLine = checkWin(r, c, currentPlayer);
@@ -391,7 +396,6 @@
                 const prevState = history[historyIndex];
                 board = prevState.board.map(row => [...row]);
                 selectingDirection = null;
-                // 駒を置く前に戻すので lastMove などの状態も履歴から復元
                 lastMove = prevState.lastMove; 
                 arrowDir = prevState.arrowDir;
             } else {
@@ -429,10 +433,6 @@
                 piece.className = `piece ${val === 1 ? 'red' : 'blue'}`;
                 cell.appendChild(piece);
                 
-                // 修正：矢印を表示する条件を厳密化
-                // 1. lastMove であること
-                // 2. arrowDir が確定していること
-                // 3. 現在向きを選択中（selectingDirection）でないこと（新しい駒を置いた直後の誤表示を防ぐ）
                 if (lastMove && lastMove.r === r && lastMove.c === c && arrowDir && !selectingDirection) {
                     const arrowWrap = document.createElement('div');
                     arrowWrap.className = 'arrow-draw';
