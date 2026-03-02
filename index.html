@@ -13,8 +13,15 @@
             --panel-bg: #ffffff;
             --arrow-color: #ffffff;
             --grid-bg: #cbd5e1;
-            /* 画面の高さや幅に合わせてセルのサイズを動的に計算 */
-            --cell-size: min(11vw, 5.5vh, 45px);
+            /* デフォルトのセルサイズ（縦向き用） */
+            --cell-size: min(12vw, 42px);
+        }
+
+        /* 横向き時の最適化（盤面を最大化） */
+        @media (orientation: landscape) {
+            :root {
+                --cell-size: min(10vw, 12vh, 65px);
+            }
         }
 
         * {
@@ -28,9 +35,8 @@
             margin: 0;
             padding: 0;
             display: flex;
-            flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
+            justify-content: center;
             height: 100dvh;
             width: 100vw;
             overflow: hidden;
@@ -39,93 +45,100 @@
         .game-container {
             display: flex;
             flex-direction: row;
-            align-items: flex-start;
+            align-items: center;
             justify-content: center;
-            gap: 15px;
-            padding: 10px;
-            max-width: 100%;
-            max-height: 100%;
+            gap: 20px;
+            padding: 15px;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 縦向きレイアウトの復元 */
+        @media (max-width: 600px), (orientation: portrait) {
+            body {
+                align-items: flex-start; /* 少し上に配置 */
+                padding-top: 20px;
+            }
+            .game-container {
+                flex-direction: column;
+                align-items: center;
+                justify-content: flex-start;
+                gap: 15px;
+            }
+            .side-panel {
+                width: 100% !important;
+                flex-direction: row !important;
+                justify-content: center !important;
+                align-items: center;
+                gap: 12px !important;
+            }
+            .status-card { flex: 0 0 auto; min-width: 80px; }
+            .direction-panel { flex: 0 0 auto; }
+            .history-controls { flex: 0 0 auto; min-width: 100px; }
         }
 
         /* サイドパネル */
         .side-panel {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            width: 140px;
+            justify-content: center;
+            gap: 15px;
+            width: 160px;
             flex-shrink: 0;
-        }
-
-        /* 縦向き・モバイルレイアウト */
-        @media (max-width: 600px), (orientation: portrait) {
-            .game-container {
-                flex-direction: column;
-                align-items: center;
-                gap: 8px;
-            }
-            .side-panel {
-                width: 95vw;
-                flex-direction: row;
-                justify-content: space-between;
-                align-items: center;
-                gap: 5px;
-            }
-            .status-card { flex: 1; margin: 0; }
-            .direction-panel { flex: 2; margin: 0; }
-            .history-controls { flex: 1.2; margin: 0; }
         }
 
         .status-card {
             background: var(--panel-bg);
-            padding: 8px;
-            border-radius: 10px;
+            padding: 10px;
+            border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             text-align: center;
             border: 1px solid #e2e8f0;
         }
 
         .current-player {
-            font-size: 0.85rem;
+            font-size: 1rem;
             font-weight: 800;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 8px;
         }
 
         .player-indicator {
-            width: 12px;
-            height: 12px;
+            width: 14px;
+            height: 14px;
             border-radius: 50%;
         }
 
         /* 矢印選択パネル */
         .direction-panel {
             background: var(--panel-bg);
-            padding: 5px;
-            border-radius: 10px;
+            padding: 8px;
+            border-radius: 12px;
             border: 1px solid #e2e8f0;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
         .direction-panel.disabled {
-            opacity: 0.1;
+            opacity: 0.15;
             pointer-events: none;
         }
 
         .direction-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 3px;
+            gap: 4px;
+            justify-items: center;
         }
 
         .dir-btn {
-            width: min(35px, 8vw);
-            height: min(35px, 8vw);
+            width: 38px;
+            height: 38px;
             border: 1px solid #cbd5e1;
             background: white;
-            border-radius: 4px;
-            font-size: 14px;
+            border-radius: 6px;
+            font-size: 18px;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -133,21 +146,22 @@
             padding: 0;
         }
 
-        .dir-btn:active { background: #f1f5f9; }
-
-        /* 盤面 */
+        /* 盤面エリア */
         .grid-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
             background: var(--grid-bg);
-            padding: 4px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 6px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
         }
 
         .grid {
             display: grid;
             grid-template-columns: repeat(7, var(--cell-size));
             grid-template-rows: repeat(7, var(--cell-size));
-            gap: 2px;
+            gap: 3px;
         }
 
         .cell {
@@ -158,29 +172,30 @@
             align-items: center;
             justify-content: center;
             position: relative;
-            border-radius: 2px;
+            border-radius: 4px;
             cursor: pointer;
         }
 
-        .cell.valid-p1 { background-color: #ffdce0; }
-        .cell.valid-p2 { background-color: #e0f0ff; }
-        .cell.winner { background-color: #fef08a !important; animation: win-pulse 0.6s infinite alternate; }
+        .cell.valid-p1 { background-color: #fff1f2; border: 1px solid #fecdd3; }
+        .cell.valid-p2 { background-color: #f0f9ff; border: 1px solid #bae6fd; }
+        .cell.winner { background-color: #fef08a !important; animation: win-pulse 0.8s infinite alternate; z-index: 5; }
 
-        @keyframes win-pulse { from { opacity: 1; } to { opacity: 0.6; } }
+        @keyframes win-pulse { from { transform: scale(1); } to { transform: scale(0.95); opacity: 0.8; } }
 
         .piece {
-            width: 80%;
-            height: 80%;
+            width: 85%;
+            height: 85%;
             border-radius: 50%;
             z-index: 2;
+            box-shadow: inset -2px -2px 4px rgba(0,0,0,0.1), 1px 1px 2px rgba(0,0,0,0.1);
         }
-        .piece.red { background: radial-gradient(circle at 30% 30%, #ff6b6b, var(--p1-color)); }
-        .piece.blue { background: radial-gradient(circle at 30% 30%, #60a5fa, var(--p2-color)); }
+        .piece.red { background: radial-gradient(circle at 30% 30%, #ff8787, var(--p1-color)); }
+        .piece.blue { background: radial-gradient(circle at 30% 30%, #74c0fc, var(--p2-color)); }
 
         .arrow-draw {
             position: absolute;
-            width: 60%;
-            height: 60%;
+            width: 70%;
+            height: 70%;
             pointer-events: none;
             z-index: 3;
             display: flex;
@@ -206,28 +221,28 @@
         .history-controls {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 4px;
+            gap: 6px;
         }
 
         .action-btn {
-            padding: 6px 2px;
+            padding: 8px 6px;
             border: none;
-            border-radius: 6px;
-            background-color: #64748b;
+            border-radius: 8px;
+            background-color: #475569;
             color: white;
-            font-size: 0.7rem;
-            font-weight: 600;
+            font-size: 0.75rem;
+            font-weight: 700;
             cursor: pointer;
         }
 
-        .action-btn:disabled { opacity: 0.3; }
-        .reset-btn { background-color: #ef4444; grid-column: span 2; }
+        .action-btn:active { transform: translateY(1px); }
+        .action-btn:disabled { opacity: 0.2; cursor: not-allowed; }
+        .reset-btn { background-color: #dc2626; grid-column: span 2; }
     </style>
 </head>
 <body>
 
 <div class="game-container">
-    <!-- サイドパネル (上または横) -->
     <div class="side-panel">
         <div class="status-card">
             <div class="current-player">
@@ -257,7 +272,6 @@
         </div>
     </div>
 
-    <!-- 盤面エリア -->
     <div class="grid-container">
         <div class="grid" id="board"></div>
     </div>
