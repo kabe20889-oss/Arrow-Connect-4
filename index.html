@@ -13,17 +13,17 @@
             --panel-bg: #ffffff;
             --arrow-color: #ffffff;
             --grid-bg: #cbd5e1;
-            /* 縦向き（デフォルト）は操作しやすい大きめサイズ */
+            /* 縦向き（デフォルト） */
             --cell-size: min(12vw, 45px);
         }
 
-        /* 横向き時は指定通り約20%縮小 */
+        /* 横向き時：前回(0.8)より5%大きく(0.85)設定 */
         @media (orientation: landscape) {
             :root {
-                --cell-size: min(6.5vw, 8.5vh, 42px);
+                --cell-size: min(7vw, 9vh, 46px);
             }
             .game-container {
-                transform: scale(0.8); /* 横向きのみ縮小 */
+                transform: scale(0.85); 
             }
         }
 
@@ -54,10 +54,10 @@
             padding: 10px;
             width: 100%;
             height: 100%;
-            transition: transform 0.3s ease;
+            transition: transform 0.2s ease-out;
         }
 
-        /* 縦向きレイアウト：縮小を解除し、元のフルサイズに */
+        /* 縦向きレイアウト */
         @media (max-width: 600px), (orientation: portrait) {
             body {
                 align-items: flex-start;
@@ -68,7 +68,7 @@
                 align-items: center;
                 justify-content: flex-start;
                 gap: 15px;
-                transform: scale(1.0); /* 縦向きは縮小しない */
+                transform: scale(1.0);
             }
             .side-panel {
                 width: 100% !important;
